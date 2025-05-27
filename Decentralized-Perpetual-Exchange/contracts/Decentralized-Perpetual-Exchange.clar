@@ -431,7 +431,7 @@
   }
 )
 
-;; 10. RISK MANAGEMENT ENHANCEMENTS
+;; RISK MANAGEMENT ENHANCEMENTS
 (define-map risk-parameters
   { market-id: uint }
   {
@@ -479,5 +479,25 @@
       )
       (ok true)
     )
+  )
+)
+
+(define-public (contribute-to-insurance (market-id uint) (amount uint))
+  (let (
+    (current-fund (default-to 
+      { balance: u0, contribution-rate: u10, deficit-coverage: u0, last-updated: u0 }
+      (map-get? insurance-fund { market-id: market-id })
+    ))
+  )
+    (asserts! (> amount u0) ERR_INVALID_PARAMETER)
+    
+    (map-set insurance-fund
+      { market-id: market-id }
+      (merge current-fund {
+        balance: (+ (get balance current-fund) amount),
+        last-updated: stacks-block-height
+      })
+    )
+    (ok true)
   )
 )
