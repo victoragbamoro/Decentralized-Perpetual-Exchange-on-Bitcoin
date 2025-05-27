@@ -392,3 +392,41 @@
     timestamp: uint
   }
 )
+
+;; PORTFOLIO ANALYTICS
+(define-map portfolio-metrics
+  { user: principal, period: uint } ;; period in days
+  {
+    total-pnl: int,
+    win-rate: uint,
+    sharpe-ratio: int,
+    max-drawdown: uint,
+    total-trades: uint,
+    avg-holding-period: uint,
+    risk-adjusted-return: int
+  }
+)
+
+;; SOCIAL FEATURES
+(define-map trader-profiles
+  { trader: principal }
+  {
+    display-name: (string-ascii 50),
+    reputation-score: uint,
+    followers: uint,
+    following: uint,
+    public-stats: bool,
+    verified: bool
+  }
+)
+
+(define-map copy-trading
+  { follower: principal, leader: principal }
+  {
+    allocation-percentage: uint,
+    max-position-size: uint,
+    copy-settings: (buff 50),
+    performance: int,
+    start-timestamp: uint
+  }
+)
