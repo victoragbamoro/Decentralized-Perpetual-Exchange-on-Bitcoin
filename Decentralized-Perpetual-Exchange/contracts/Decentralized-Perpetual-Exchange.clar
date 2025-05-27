@@ -543,3 +543,56 @@
     (ok true)
   )
 )
+
+
+(define-public (use-referral-code (code (string-ascii 20)))
+  (let (
+    (referral-data (unwrap! (map-get? referral-codes { code: code }) ERR_REFERRAL_NOT_FOUND))
+  )
+    (asserts! (get is-active referral-data) ERR_INVALID_PARAMETER)
+    
+    (map-set user-referrals
+      { user: tx-sender }
+      {
+        referrer: (some (get referrer referral-data)),
+        referred-users: u0,
+        referral-rewards: u0,
+        discount-tier: u1
+      }
+    )
+    (ok true)
+  )
+)
+
+;; ===== YIELD VAULT FUNCTIONS =====
+
+(define-public (create-yield-vault 
+                (name (string-ascii 30))
+                (strategy-contract principal)
+                (performance-fee uint)
+                (management-fee uint)
+                (risk-level uint))
+  (let (
+    (vault-id (var-get vault-counter))
+  )
+    (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_NOT_AUTHORIZED)
+    (asserts! (<= performance-fee u2000) ERR_INVALID_PARAMETER) ;; Max 20%
+    (asserts! (<= management-fee u200) ERR_INVALID_PARAMETER) ;; Max 2%
+    
+    (map-set yield-vaults
+      { vault-id: vault-id }
+      {
+        name: name,
+        strategy-contract: strategy-contract,
+        total-assets: u0,
+        total-shares: u0,
+        performance-fee: performance-fee,
+        management-fee: management-fee,
+        is-active: true,
+        risk-level: risk-level
+      }
+    )
+    (var-set vault-counter (+ vault-id u1))
+    (ok vault-id)
+  )
+)
