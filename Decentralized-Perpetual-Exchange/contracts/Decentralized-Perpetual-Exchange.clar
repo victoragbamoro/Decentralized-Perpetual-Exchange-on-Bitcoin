@@ -313,3 +313,46 @@
     discount-tier: uint
   }
 )
+
+;; ADVANCED ORDER TYPES & STRATEGIES
+(define-map advanced-orders
+  { order-id: (buff 32) }
+  {
+    trader: principal,
+    market-id: uint,
+    order-type: uint, ;; 5: OCO, 6: Trailing Stop, 7: TWAP, 8: Iceberg
+    primary-price: uint,
+    secondary-price: (optional uint),
+    trail-amount: (optional uint),
+    time-in-force: uint,
+    execution-params: (optional (buff 100))
+  }
+)
+
+;; CROSS-MARGIN SYSTEM
+(define-map cross-margin-accounts
+  { user: principal }
+  {
+    total-collateral: uint,
+    used-margin: uint,
+    maintenance-margin: uint,
+    available-margin: uint,
+    portfolio-pnl: int,
+    risk-score: uint
+  }
+)
+
+;; YIELD FARMING VAULTS
+(define-map yield-vaults
+  { vault-id: uint }
+  {
+    name: (string-ascii 30),
+    strategy-contract: principal,
+    total-assets: uint,
+    total-shares: uint,
+    performance-fee: uint,
+    management-fee: uint,
+    is-active: bool,
+    risk-level: uint
+  }
+)
