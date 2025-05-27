@@ -131,3 +131,44 @@
     premium-index: int
   }
 )
+
+;; Event counters for pagination
+(define-data-var trade-counter uint u0)
+(define-data-var liquidation-counter uint u0)
+(define-data-var funding-counter uint u0)
+
+;; Add or update an oracle price feed
+(define-public (set-oracle-price-feed
+                (oracle-id (buff 32))
+                (source (string-ascii 32))
+                (heartbeat uint)
+                (providers (list 10 principal)))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_NOT_AUTHORIZED)
+    
+    (map-set oracle-price-feeds
+      { oracle-id: oracle-id }
+      {
+        price: u0,
+        timestamp: u0,
+        source: source,
+        heartbeat: heartbeat,
+        providers: providers
+      }
+    )
+    (ok true)
+  )
+)
+
+;; Read-only function to get current price from oracle
+(define-read-only (get-oracle-price (oracle-id (buff 32)))
+  (let (
+    (oracle-data (unwrap! (map-get? oracle-price-feeds { oracle-id: oracle-id }) ERR_ORACLE_NOT_FOUND))
+    (current-time stacks-block-height)
+  )
+    ;; Check if price is stale
+    (asserts! (<= (- current-time (get timestamp oracle-data)) (get heartbeat oracle-data)) ERR_INVALID_ORACLE_DATA)
+    (ok (get price oracle-data))
+  )
+)
+
