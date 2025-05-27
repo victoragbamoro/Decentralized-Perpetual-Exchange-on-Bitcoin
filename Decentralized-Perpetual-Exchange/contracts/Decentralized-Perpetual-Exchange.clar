@@ -596,3 +596,94 @@
     (ok vault-id)
   )
 )
+
+(define-public (deposit-to-vault (vault-id uint) (amount uint))
+  (let (
+    (vault (unwrap! (map-get? yield-vaults { vault-id: vault-id }) ERR_VAULT_NOT_FOUND))
+    (shares-to-mint (if (is-eq (get total-assets vault) u0)
+                      amount
+                      (/ (* amount (get total-shares vault)) (get total-assets vault))))
+  )
+    (asserts! (get is-active vault) ERR_INVALID_PARAMETER)
+    (asserts! (> amount u0) ERR_INVALID_PARAMETER)
+    
+    (map-set vault-positions
+      { vault-id: vault-id, user: tx-sender }
+      {
+        shares: shares-to-mint,
+        deposited-amount: amount,
+        entry-timestamp: stacks-block-height,
+        accumulated-yield: u0
+      }
+    )
+    
+    (map-set yield-vaults
+      { vault-id: vault-id }
+      (merge vault {
+        total-assets: (+ (get total-assets vault) amount),
+        total-shares: (+ (get total-shares vault) shares-to-mint)
+      })
+    )
+    (ok shares-to-mint)
+  )
+)
+
+(define-public (create-proposal 
+                (title (string-ascii 100))
+                (description (string-ascii 500))
+                (proposal-type uint)
+                (voting-duration uint))
+  (let (
+    (proposal-id (var-get proposal-counter))
+  )
+    (asserts! (<= voting-duration u20160) ERR_INVALID_PARAMETER) ;; Max 2 weeks
+    
+    (map-set governance-proposals
+      { proposal-id: proposal-id }
+      {
+        proposer: tx-sender,
+        title: title,
+        description: description,
+        proposal-type: proposal-type,
+        voting-start: stacks-block-height,
+        voting-end: (+ stacks-block-height voting-duration),
+        votes-for: u0,
+        votes-against: u0,
+        quorum-reached: false,
+        executed: false
+      }
+    )
+    (var-set proposal-counter (+ proposal-id u1))
+    (ok proposal-id)
+  )
+)
+
+(define-public (vote-on-proposal (proposal-id uint) (vote bool) (voting-power uint))
+  (let (
+    (proposal (unwrap! (map-get? governance-proposals { proposal-id: proposal-id }) ERR_GOVERNANCE_PROPOSAL_NOT_FOUND))
+  )
+    (asserts! (<= stacks-block-height (get voting-end proposal)) ERR_INVALID_PARAMETER)
+    (asserts! (>= stacks-block-height (get voting-start proposal)) ERR_INVALID_PARAMETER)
+    
+    (map-set governance-votes
+      { proposal-id: proposal-id, voter: tx-sender }
+      {
+        vote: vote,
+        voting-power: voting-power,
+        timestamp: stacks-block-height
+      }
+    )
+    
+    (if vote
+      (map-set governance-proposals
+        { proposal-id: proposal-id }
+        (merge proposal { votes-for: (+ (get votes-for proposal) voting-power) })
+      )
+      (map-set governance-proposals
+        { proposal-id: proposal-id }
+        (merge proposal { votes-against: (+ (get votes-against proposal) voting-power) })
+      )
+    )
+    (ok true)
+  )
+)
