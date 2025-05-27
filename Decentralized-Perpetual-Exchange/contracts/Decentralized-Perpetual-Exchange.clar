@@ -356,3 +356,39 @@
     risk-level: uint
   }
 )
+
+(define-map vault-positions
+  { vault-id: uint, user: principal }
+  {
+    shares: uint,
+    deposited-amount: uint,
+    entry-timestamp: uint,
+    accumulated-yield: uint
+  }
+)
+
+;; GOVERNANCE SYSTEM
+(define-map governance-proposals
+  { proposal-id: uint }
+  {
+    proposer: principal,
+    title: (string-ascii 100),
+    description: (string-ascii 500),
+    proposal-type: uint,
+    voting-start: uint,
+    voting-end: uint,
+    votes-for: uint,
+    votes-against: uint,
+    quorum-reached: bool,
+    executed: bool
+  }
+)
+
+(define-map governance-votes
+  { proposal-id: uint, voter: principal }
+  {
+    vote: bool, ;; true for yes, false for no
+    voting-power: uint,
+    timestamp: uint
+  }
+)
