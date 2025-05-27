@@ -113,3 +113,21 @@
     total-funding-paid: int
   }
 )
+
+;; Trading volume tracking
+(define-map trading-volumes
+  { market-id: uint, trader: principal, period: uint } ;; period: 0 = daily, 1 = weekly, 2 = monthly
+  {
+    volume: uint,
+    timestamp: uint
+  }
+)
+
+;; Funding rate history
+(define-map funding-history
+  { market-id: uint, timestamp: uint }
+  {
+    funding-rate: int,
+    premium-index: int
+  }
+)
