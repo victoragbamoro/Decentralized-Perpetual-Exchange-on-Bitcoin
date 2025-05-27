@@ -245,3 +245,28 @@
 (define-constant PROPOSAL_FEE_STRUCTURE u3)
 (define-constant PROPOSAL_EMERGENCY_PAUSE u4)
 
+;; LIQUIDITY MINING & REWARDS SYSTEM
+(define-map liquidity-providers
+  { provider: principal, market-id: uint }
+  {
+    staked-amount: uint,
+    reward-debt: uint,
+    accumulated-rewards: uint,
+    staking-timestamp: uint,
+    lock-period: uint,
+    tier: uint
+  }
+)
+
+(define-map reward-pools
+  { market-id: uint }
+  {
+    total-staked: uint,
+    reward-per-block: uint,
+    accumulated-reward-per-share: uint,
+    last-reward-block: uint,
+    total-rewards-distributed: uint
+  }
+)
+
+
