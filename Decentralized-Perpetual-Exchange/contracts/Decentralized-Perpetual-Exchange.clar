@@ -501,3 +501,45 @@
     (ok true)
   )
 )
+
+(define-public (claim-insurance (market-id uint) (amount uint) (reason (string-ascii 50)))
+  (let (
+    (claim-id (var-get claim-counter))
+    (fund (unwrap! (map-get? insurance-fund { market-id: market-id }) ERR_ORACLE_NOT_FOUND))
+  )
+    (asserts! (>= (get balance fund) amount) ERR_INSURANCE_FUND_INSUFFICIENT)
+    
+    (map-set insurance-claims
+      { claim-id: claim-id }
+      {
+        market-id: market-id,
+        trader: tx-sender,
+        amount: amount,
+        reason: reason,
+        status: u0,
+        timestamp: stacks-block-height
+      }
+    )
+    (var-set claim-counter (+ claim-id u1))
+    (ok claim-id)
+  )
+)
+
+
+(define-public (create-referral-code (code (string-ascii 20)))
+  (begin
+    (asserts! (is-none (map-get? referral-codes { code: code })) ERR_DUPLICATE_ORDER_ID)
+    
+    (map-set referral-codes
+      { code: code }
+      {
+        referrer: tx-sender,
+        total-referrals: u0,
+        total-volume: u0,
+        commission-earned: u0,
+        is-active: true
+      }
+    )
+    (ok true)
+  )
+)
