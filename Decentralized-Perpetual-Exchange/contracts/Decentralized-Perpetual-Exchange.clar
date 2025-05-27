@@ -687,3 +687,42 @@
     (ok true)
   )
 )
+
+(define-read-only (get-liquidity-provider-info (provider principal) (market-id uint))
+  (map-get? liquidity-providers { provider: provider, market-id: market-id })
+)
+
+(define-read-only (get-insurance-fund-balance (market-id uint))
+  (match (map-get? insurance-fund { market-id: market-id })
+    fund (ok (get balance fund))
+    ERR_ORACLE_NOT_FOUND
+  )
+)
+
+(define-read-only (get-referral-stats (code (string-ascii 20)))
+  (map-get? referral-codes { code: code })
+)
+
+(define-read-only (get-vault-info (vault-id uint))
+  (map-get? yield-vaults { vault-id: vault-id })
+)
+
+(define-read-only (get-proposal-details (proposal-id uint))
+  (map-get? governance-proposals { proposal-id: proposal-id })
+)
+
+(define-read-only (get-user-vault-position (vault-id uint) (user principal))
+  (map-get? vault-positions { vault-id: vault-id, user: user })
+)
+
+(define-read-only (get-cross-margin-account (user principal))
+  (map-get? cross-margin-accounts { user: user })
+)
+
+(define-read-only (get-portfolio-metrics (user principal) (period uint))
+  (map-get? portfolio-metrics { user: user, period: period })
+)
+
+(define-read-only (get-trader-profile (trader principal))
+  (map-get? trader-profiles { trader: trader })
+)
