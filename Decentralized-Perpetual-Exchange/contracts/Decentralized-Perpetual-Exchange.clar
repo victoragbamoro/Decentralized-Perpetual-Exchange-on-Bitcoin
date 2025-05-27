@@ -172,3 +172,54 @@
   )
 )
 
+;; Update markets that use a specific oracle
+(define-private (update-markets-with-oracle (oracle-id (buff 32)) (price uint))
+  (begin
+    ;; This would iterate through markets in a real implementation
+    ;; For Clarity, we would need a different approach like indexing or event tracking
+    ;; Simplified implementation for demonstration
+    (ok true)
+  )
+)
+
+;; Get cumulative funding for a market since inception
+(define-read-only (get-cumulative-funding (market-id uint))
+  ;; In production, this would calculate based on funding rate history
+  ;; Simplified version for demonstration
+  (let (
+    (market (unwrap! (map-get? markets { market-id: market-id }) (to-int u0)))
+    (current-funding-rate (get funding-rate market))
+  )
+    current-funding-rate ;; Simplified - should accumulate historical rates
+  )
+)
+
+;; Create a new position
+(define-private (create-new-position
+                (market-id uint)
+                (trader principal)
+                (size int)
+                (collateral uint)
+                (entry-price uint)
+                (liquidation-price uint)
+                (leverage uint)
+                (margin-ratio uint))
+  (begin
+    (map-set positions
+      { market-id: market-id, trader: trader }
+      {
+        size: size,
+        collateral: collateral,
+        entry-price: entry-price,
+        last-cumulative-funding: (get-cumulative-funding market-id),
+        liquidation-price: liquidation-price,
+        last-updated-block: stacks-block-height,
+        realized-pnl: 0,
+        leverage: leverage,
+        margin-ratio: margin-ratio
+      }
+    )
+    (ok true)
+  )
+)
+
